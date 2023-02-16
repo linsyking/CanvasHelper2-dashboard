@@ -70,7 +70,25 @@ function loadppt() {
     });
 }
 
+function loadlink(){
+    $("span.label").click(function () {
+        let link = $(this).attr("url");
+        let smsg = {
+            "url": link
+        }
+        $.ajax(apilink(`/browser`), {
+            data: JSON.stringify(smsg),
+            contentType: 'application/json',
+            type: 'POST',
+            error: function (data) {
+                console.log(data)
+            }
+        });
+    });
+}
+
 function loadupdate() {
+    loadlink();
     loadppt();
     loadcheck();
     updatecheck();

@@ -7,11 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign up a CanvasHelper2 account</title>
     <script src="./js/jquery-3.6.0.min.js"></script>
+    <script src="./js/serverURL.js"></script>
 </head>
 
 <body>
     <h2>Sign up</h2>
-    <form id="loginForm">
+    <form id="signupForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
         <br><br>
@@ -22,19 +23,17 @@
     </form>
 
     <script>
-        $('#loginForm').on('submit', function (event) {
+        var signUpEndpoint = getServerURL() + '/signup';
+        $('#signupForm').on('submit', function (event) {
             event.preventDefault(); // Prevent the default form submission
 
             // Serialize the form data
             var formData = $(this).serialize();
 
-            // Update with your backend domain
-            var loginEndpoint = 'http://localhost:9283/signup';
-
             $.ajax({
-                url: loginEndpoint,
+                url: signUpEndpoint,
                 type: 'POST',
-                contentType: 'application/x-www-form-urlencoded', // Correct content type for form data
+                contentType: 'application/x-www-form-urlencoded', // Form data type
                 data: formData,
                 xhrFields: {
                     withCredentials: true

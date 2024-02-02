@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up a CanvasHelper2 account</title>
+    <script src="./js/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <h2>Sign up</h2>
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br><br>
+        <button type="submit">Sign up</button>
+    </form>
+
+    <script>
+        $('#loginForm').on('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Serialize the form data
+            var formData = $(this).serialize();
+
+            // Update with your backend domain
+            var loginEndpoint = 'http://localhost:9283/signup';
+
+            $.ajax({
+                url: loginEndpoint,
+                type: 'POST',
+                contentType: 'application/x-www-form-urlencoded', // Correct content type for form data
+                data: formData,
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function (data) {
+                    console.log('Successfully signed up:', data.message);
+                    // document.cookie = `auth_token=${data.auth_token}; path=/; SameSite=None; Secure`;
+                    setTimeout(`location.href = './login'`, 1000);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Sign up failed:', textStatus, errorThrown);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

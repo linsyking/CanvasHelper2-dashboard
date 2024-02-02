@@ -293,7 +293,7 @@ $(document).ready(function () {
     });
 
     setInterval(soft_refresh, 60 * 1000);
-    setInterval(refreshToken, 0.5 * 60 * 1000);
+    setInterval(refreshToken, 60 * 60 * 1000);
 });
 
 function soft_refresh() {

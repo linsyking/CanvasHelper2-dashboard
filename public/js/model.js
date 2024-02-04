@@ -1,4 +1,31 @@
-const api_url = 'http://localhost:9283';
+// Getting server URL from local storage
+function getServerURL() {
+    // If no server URL in local storage, prompt the user to enter it
+    var serverURL = localStorage.getItem("serverURL");
+
+    var defaultURL = "http://localhost:9283";
+
+    if (!serverURL) {
+        serverURL = window.prompt("Please enter the server URL:", defaultURL);
+        // If url not start with http:// or https://, add it
+        if (!serverURL.startsWith("http://") && !serverURL.startsWith("https://")) {
+            serverURL = "http://" + serverURL;
+        }
+        // If url end with /, remove it
+        if (serverURL.endsWith("/")) {
+            serverURL = serverURL.slice(0, -1);
+        }
+        // If closed without entering anything, use the default URL
+        if (!serverURL) {
+            serverURL = defaultURL;
+        }
+        localStorage.setItem("serverURL", serverURL);
+    }
+
+    return serverURL;
+}
+
+const api_url = getServerURL();
 
 function loadcheck() {
     $('.checkbox').each(function () {
@@ -53,11 +80,27 @@ function updatecheck() {
             data: JSON.stringify(smsg),
             contentType: 'application/json',
             type: 'POST',
+            xhrFields: {
+                withCredentials: true
+            },
             error: function (data) {
                 console.log(data)
             }
         });
     });
+}
+
+function refreshToken() {
+    console.log("Refreshing Token");
+    $.ajax(apilink(`/refresh`), {
+        type: 'POST',
+        xhrFields: {
+            withCredentials: true
+        },
+        error: function (data) {
+            console.log(data)
+        }
+    })
 }
 
 function loadppt() {
@@ -70,7 +113,7 @@ function loadppt() {
     });
 }
 
-function loadlink(){
+function loadlink() {
     $("span.label").click(function () {
         let link = $(this).attr("url");
         let smsg = {
@@ -80,6 +123,9 @@ function loadlink(){
             data: JSON.stringify(smsg),
             contentType: 'application/json',
             type: 'POST',
+            xhrFields: {
+                withCredentials: true
+            },
             error: function (data) {
                 console.log("Failed to open the web browser.");
                 window.open(link);
@@ -107,6 +153,9 @@ function getcache() {
     if (window.udatap['bid']) {
         $.ajax(apilink('/canvas/dashboard?cache=true'), {
             type: 'GET',
+            xhrFields: {
+                withCredentials: true
+            },
             error: function (data) {
                 $("#b1").text("Please check your Internet connection");
                 window.isupdating = 0;
@@ -121,7 +170,7 @@ function getcache() {
 
 function sendreq() {
     // Precheck
-    if(!window.udatap) return;
+    if (!window.udatap) return;
     if (window.udatap['bid'].length < 10) {
         // Obviously incorrect
         $("#b1").html("Please check your bid");
@@ -129,6 +178,9 @@ function sendreq() {
     }
     $.ajax(apilink('/canvas/dashboard'), {
         type: 'GET',
+        xhrFields: {
+            withCredentials: true
+        },
         error: function (data) {
             $("#b1").text("Please check your Internet connection");
             window.isupdating = 0;
@@ -178,30 +230,49 @@ function setupConfig() {
     // Set background images/video according to config
     if (!window.udata) {
         // Verify
-        $.get(apilink('/config/verify')).fail(function () {
-            $("#b1").html("Cannot contact with the server. Is the server running?");
-            showerrer();
+        $.ajax({
+            url: apilink('/config/verify'),
+            type: 'GET',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function () {
+                // Success callback
+            },
+            error: function () {
+                $("#b1").html("Cannot contact with the server. Is the server running?");
+                showerrer();
+            }
         });
 
-        $.get(apilink('/config'), function (data) {
-            window.udata = data;
-            try {
-                window.udatap = JSON.parse(data);
-            } catch (e) {
-                $("#b1").html("<b>user_data parse error</b>\n<p>" + e + "</p>");
+        $.ajax({
+            url: apilink('/config'),
+            type: 'GET',
+            dataType: 'text',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function (data) {
+                window.udata = data;
+                try {
+                    window.udatap = JSON.parse(data);
+                } catch (e) {
+                    $("#b1").html("<b>user_data parse error</b>\n<p>" + e + "</p>");
+                    showerrer();
+                    return;
+                }
+                add_bg();
+                setpos();
+                setVideobg();
+                $("#b1").html("Updating...");
+                getcache();
+                window.isupdating = 1;
+                sendreq();
+            },
+            error: function () {
+                $("#b1").html("Cannot contact with the server. Is the server running?");
                 showerrer();
-                return;
             }
-            add_bg();
-            setpos();
-            setVideobg();
-            $("#b1").html("Updating...");
-            getcache();
-            window.isupdating = 1;
-            sendreq();
-        }, 'text').fail(function () {
-            $("#b1").html("Cannot contact with the server. Is the server running?");
-            showerrer();
         });
     }
     // One Right
@@ -250,7 +321,7 @@ $(document).ready(function () {
     });
 
     setInterval(soft_refresh, 60 * 1000);
-
+    setInterval(refreshToken, 60 * 60 * 1000);
 });
 
 function soft_refresh() {
@@ -358,13 +429,19 @@ function sendpos() {
     $.ajax(apilink('/canvas/position'), {
         data: JSON.stringify(smsg),
         contentType: 'application/json',
-        type: 'PUT'
+        type: 'PUT',
+        xhrFields: {
+            withCredentials: true
+        }
     });
 }
 
 function setpos() {
     $.ajax(apilink('/canvas/position'), {
         type: 'GET',
+        xhrFields: {
+            withCredentials: true
+        },
         error: function (data) {
             showup();
         }

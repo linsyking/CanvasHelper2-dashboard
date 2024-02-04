@@ -81,7 +81,8 @@ function loadlink(){
             contentType: 'application/json',
             type: 'POST',
             error: function (data) {
-                console.log(data)
+                console.log("Failed to open the web browser.");
+                window.open(link);
             }
         });
     });
